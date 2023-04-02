@@ -1,0 +1,9 @@
+.row {
+    padding: 10px;
+    overflow-x: hidden;
+    position: relative;
+    top: 70px;
+    background-color: black;
+}
+
+
