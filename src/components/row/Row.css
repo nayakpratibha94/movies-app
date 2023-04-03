@@ -1,9 +1,12 @@
 .row {
-    padding: 10px;
+    padding: 15px 10px 10px 10px;
     overflow-x: hidden;
     position: relative;
     top: 70px;
     background-color: black;
+}
+.infinite-scroll-component {
+    overflow: hidden !important;
 }
 
 

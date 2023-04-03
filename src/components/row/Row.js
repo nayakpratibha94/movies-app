@@ -1,51 +1,28 @@
-import React, { useState, useEffect } from 'react';
+import React, { lazy, Suspense, useEffect } from 'react';
 import './Row.css';
-import Card from '../card/Card';
-import { useSelector } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
 import InfiniteScroll from "react-infinite-scroll-component";
 import {
-  filteredMovies
+  filteredMovies, movieList, fetchMovies
 } from '../../features/counterSlice';
-import ContentListing1 from '../../mockJsons/CONTENTLISTINGPAGE-PAGE1.json';
-import ContentListing2 from '../../mockJsons/CONTENTLISTINGPAGE-PAGE2.json';
-import ContentListing3 from '../../mockJsons/CONTENTLISTINGPAGE-PAGE3.json';
+const CardContainer = lazy(() => import('../cards-container/CardContainer'));
 
-let page = 1;
-const fetchData = (setMovies, movies) => {
-  const newItems = []
-  let result = [];
-  console.log(page);
-  if (page ===1) {
-     result = ContentListing1['page']['content-items']['content'];
-     page = page +1;
-  } else if (page === 2) {
-    result = ContentListing2['page']['content-items']['content'];
-    page = page +1;
-  } else if (page === 3) {
-    result = ContentListing3['page']['content-items']['content'];
-    page = page +1;
-  }
-  newItems.push(...result);
-  if (newItems.length >0 ) {
-    setMovies([...movies, ...newItems])
-  }
-};
- 
 const refresh = (setMovies) => {};
-
+let page = 1;
 function Row() {
   const filteredItems = useSelector(filteredMovies);
-  const [movies, setMovies] = useState([]);
-  console.log('here', filteredItems)
+  const movies = useSelector(movieList);
+  const dispatch = useDispatch();
   useEffect(()=>{
-    fetchData(setMovies,movies)
+    dispatch(fetchMovies(1))
   },[])
 
   return (
     <InfiniteScroll
         dataLength={movies.length} //This is important field to render the next data
         next={() => {
-          fetchData(setMovies, movies);
+          page=page+1
+          dispatch(fetchMovies(page));
         }}
         hasMore={true}
         loader={<h4>Loading...</h4>}
@@ -65,31 +42,14 @@ function Row() {
           <h3 style={{ textAlign: "center" }}># 8593; Release to refresh</h3>
         }
       >
+      <Suspense fallback={<div>Loading...</div>}>
         {
           filteredItems && filteredItems.length > 0 ? 
-          <div className="row">
-            <div className='cards' style={{ display: "grid", gridTemplateColumns: "repeat(3, minmax(90px, 1fr)", gridGap: 10 }}>
-              {
-                filteredItems.map((movie, index) => {
-                  return (
-                    <Card imgUrl={movie['poster-image']} title={movie['name']} id={index} />
-                  )
-                })
-              }
-              </div>
-          </div> :
-          <div className="row">
-          <div className='cards' style={{ display: "grid", gridTemplateColumns: "repeat(3, minmax(90px, 1fr)", gridGap: 10 }}>
-            {
-               movies.map((movie, index) => {
-                return (
-                  <Card imgUrl={movie['poster-image']} title={movie['name']} id={index} />
-                )
-              })
-            }
-            </div>
-        </div>
+             <CardContainer items = {filteredItems} />
+           :
+           <CardContainer items = {movies} />
         }
+        </Suspense>
     </InfiniteScroll>
   );
 }
